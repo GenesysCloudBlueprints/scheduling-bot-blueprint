@@ -1,0 +1,65 @@
+{
+  "name": "Get Bookable Slots",
+  "integrationType": "aws-lambda-data-actions",
+  "actionType": "custom",
+  "config": {
+    "request": {
+      "requestUrlTemplate": "your-lambda-function-arn",
+      "requestType": "POST",
+      "headers": {},
+      "requestTemplate": "{\n  \"type\": \"getBookableSlots\",\n  \"body\": {\n    \"date\": \"${input.date}\"\n  }\n}"
+    },
+    "response": {
+      "translationMap": {},
+      "translationMapDefaults": {},
+      "successTemplate": "${rawResult}"
+    }
+  },
+  "contract": {
+    "input": {
+      "inputSchema": {
+        "type": "object",
+        "required": ["date"],
+        "properties": {
+          "date": {
+            "description": "Date of the slots that you want to check. Format should be YYYY-MM-DD",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "output": {
+      "successSchema": {
+        "type": "object",
+        "required": ["start_time", "end_time", "time_complete"],
+        "properties": {
+          "end_time": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "start_time": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "time": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "time_complete": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        }
+      }
+    }
+  },
+  "secure": false
+}
