@@ -1,0 +1,7 @@
+aws_region             = "your-aws-region"
+environment_name       = "dev"
+hapio_api_access_token = "your-hapio-api-access-token"
+hapio_location_id      = "your-hapio-location-id"
+hapio_service_id       = "your-hapio-service-id"
+genesys_division_name  = "your-genesys-division-name"
+genesys_user_email     = "your-genesys-user-email"

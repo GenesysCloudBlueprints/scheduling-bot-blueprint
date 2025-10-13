@@ -1,0 +1,48 @@
+{
+  "name": "Create Booking",
+  "integrationType": "aws-lambda-data-actions",
+  "actionType": "custom",
+  "config": {
+    "request": {
+      "requestUrlTemplate": "your-lambda-function-arn",
+      "requestType": "POST",
+      "headers": {},
+      "requestTemplate": "{\n  \"type\": \"createBooking\",\n  \"body\": {\n    \"start_time\": \"${input.start_time}\",\n    \"end_time\": \"${input.end_time}\"\n  }\n}"
+    },
+    "response": {
+      "translationMap": {},
+      "translationMapDefaults": {},
+      "successTemplate": "${rawResult}"
+    }
+  },
+  "contract": {
+    "input": {
+      "inputSchema": {
+        "type": "object",
+        "required": ["start_time", "end_time"],
+        "properties": {
+          "end_time": {
+            "description": "End time given from Hapio. In ISO format.",
+            "type": "string"
+          },
+          "start_time": {
+            "description": "Start time given from Hapio. In ISO format.",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "output": {
+      "successSchema": {
+        "type": "object",
+        "required": ["id"],
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "secure": false
+}

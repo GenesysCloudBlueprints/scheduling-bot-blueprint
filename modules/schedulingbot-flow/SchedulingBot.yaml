@@ -1,0 +1,896 @@
+botFlow:
+  name: {{bot_name}}
+  description: ""
+  division: {{division}}
+  startUpRef: "/botFlow/bots/bot[Default Bot_10]"
+  defaultLanguage: {{default_language}}
+  supportedLanguages:
+    en-us:
+      defaultLanguageSkill:
+        noValue: true
+      speechToText:
+        engine:
+          name: Genesys Enhanced v2
+          defaultEngine: true
+  variables:
+    - integerVariable:
+        name: Flow.BookAppointmentLoop
+        initialValue:
+          noValue: true
+        isInput: false
+        isOutput: false
+    - stringVariable:
+        name: Flow.booking_id
+        initialValue:
+          noValue: true
+        isInput: false
+        isOutput: false
+    - stringCollectionVariable:
+        name: Flow.end_time
+        initialValue:
+          noValue: true
+        isInput: false
+        isOutput: false
+    - integerVariable:
+        name: Flow.slot_index
+        initialValue:
+          noValue: true
+        isInput: false
+        isOutput: false
+    - stringCollectionVariable:
+        name: Flow.start_time
+        initialValue:
+          noValue: true
+        isInput: false
+        isOutput: false
+    - stringCollectionVariable:
+        name: Flow.time
+        initialValue:
+          noValue: true
+        isInput: false
+        isOutput: false
+    - stringCollectionVariable:
+        name: Flow.time_complete
+        initialValue:
+          noValue: true
+        isInput: false
+        isOutput: false
+    - integerVariable:
+        name: Flow.TimeSlotLoop
+        initialValue:
+          noValue: true
+        isInput: false
+        isOutput: false
+    - dateVariable:
+        name: Slot.AppointmentDate
+        initialValue:
+          noValue: true
+        isInput: true
+        isOutput: true
+    - timeVariable:
+        name: Slot.AppointmentTime
+        initialValue:
+          noValue: true
+        isInput: true
+        isOutput: true
+  settingsActionDefaults:
+    askForIntent:
+      voiceEndOfInputTimeout:
+        lit:
+          seconds: 1
+    askForBoolean:
+      voiceEndOfInputTimeout:
+        lit:
+          seconds: 1
+    askForSlot:
+      voiceEndOfInputTimeout:
+        lit:
+          seconds: 1
+    loopAnythingElse:
+      voiceEndOfInputTimeout:
+        lit:
+          seconds: 1
+  settingsErrorHandling:
+    errorHandling:
+      exit:
+        none: true
+    enableAgentEscalation:
+      lit: true
+    errorEventHandover:
+      exp: "MakeCommunication(\n  \"Sorry, an error occurred. One moment, please, while I put you through to someone who can help.\")"
+    agentEscalationConfirmation:
+      exp: "MakeCommunication(\n  \"You want to speak to an advisor. Is that correct?\")"
+    agentEscalationHandover:
+      exp: "MakeCommunication(\n  \"One moment, please, and I will put you through to someone.\")"
+    recognitionFailureEventHandover:
+      exp: "MakeCommunication(\n  \"Sorry, I'm having trouble understanding you. One moment, please, while I put you through to someone who can help.\")"
+    recognitionFailureEventHandling:
+      exit:
+        none: true
+    agentEscalationHandling:
+      exit:
+        none: true
+  settingsPrompts:
+    ensureAudioInPrompts: false
+    promptMediaToValidate:
+      - mediaType: audio
+      - mediaType: tts
+  settingsBotFlow:
+    intentSettings:
+      - intent:
+          confirmation:
+            exp: "MakeCommunication(\n  \"I think you want to Book an Appointment, is that correct?\")"
+          name: Book an Appointment
+      - intent:
+          confirmation:
+            exp: "MakeCommunication(\n  \"I think you want to Chat with an agent, is that correct?\")"
+          name: Chat with an agent
+    virtualAgentEnabled: true
+  settingsUserInput:
+    enableBargeIn:
+      lit: true
+    enableAutomaticQuickReplies:
+      lit: true
+    noMatchesMax:
+      lit: 3
+    noInputsMax:
+      lit: 3
+    noInputsTimeout:
+      lit:
+        seconds: 7
+    speechToTextSpeechDetectionSensitivity:
+      noValue: true
+    speechToTextMaxSpeechTimeout:
+      noValue: true
+    enableIntentClassificationHinting:
+      lit: false
+    interDigitTimeout:
+      lit:
+        seconds: 3
+    dtmfTerminatingCharacter:
+      noValue: true
+    confirmationRejectionsMax:
+      lit: 3
+    collectionLowConfidenceThreshold:
+      lit: 20
+    collectionHighConfidenceThreshold:
+      lit: 70
+    confirmationLowConfidenceThreshold:
+      lit: 40
+    noMatchApology:
+      exp: "MakeCommunication(\n  \"Sorry.\")"
+    noInputApology:
+      exp: "MakeCommunication(\n  \"Sorry, I didn't hear you.\")"
+    noToConfirmationApology:
+      exp: "MakeCommunication(\n  \"My mistake.\")"
+    confirmationNoMatchApology:
+      exp: "MakeCommunication(\n  \"Sorry, please say yes or no.\")"
+    confirmationNoInputApology:
+      exp: "MakeCommunication(\n  \"Sorry, I didn't hear you.  Please say yes or no.\")"
+  settingsKnowledge:
+    none: true
+  settingsVirtualAgent:
+    summarization:
+      lit: false
+    assignWrapupCodes:
+      lit: false
+  bots:
+    - bot:
+        name: Default Bot
+        refId: Default Bot_10
+        actions:
+          - askForIntent:
+              name: Ask for Intent
+              question:
+                exp: "MakeCommunication(\n  \"Hi! What would you like to do?\")"
+              noInput:
+                exp: "MakeCommunication(\n  \"Just speak a short sentence that describes your query. For example, \\\"Book an appointment\\\" or \\\"Talk to an agent\\\"\\\"\")"
+              noMatch:
+                exp: "MakeCommunication(\n  \"I'm sorry I didn't catch that. Tell me again what you would like to do. Here are the possible options: \\\"Book an appointment\\\", \\\"Talk to an agent\\\".\")"
+              voiceEndOfInputTimeout:
+                noValue: true
+              outputs:
+                intents:
+                  - intent:
+                      name: Book an Appointment
+                      actions:
+                        - loop:
+                            name: Appointment Loop
+                            currentIndex:
+                              var: Flow.BookAppointmentLoop
+                            loopCount:
+                              lit: 99
+                            outputs:
+                              loop:
+                                actions:
+                                  - askForSlot:
+                                      name: Ask for Slot
+                                      slot:
+                                        name: AppointmentDate
+                                      question:
+                                        exp: "MakeCommunication(\n  \"Please enter date you want to set the appointment.\")"
+                                      customValidation:
+                                        noValue: true
+                                      confirmationMode:
+                                        lit: never
+                                      noInput:
+                                        exp: "MakeCommunication(\n  \"Please say or enter the date you want to set.\")"
+                                      noMatch:
+                                        exp: "MakeCommunication(\n  \"I didn't catch that. Please give me the date you want to set the appointment.\")"
+                                      voiceEndOfInputTimeout:
+                                        noValue: true
+                                      outputs:
+                                        maxNoInputs:
+                                          enabled: false
+                                        maxNoMatches:
+                                          enabled: false
+                                  - callData:
+                                      name: Call Data Action
+                                      timeout:
+                                        lit:
+                                          minutes: 1
+                                      category:
+                                        {{lambda_integration_name}}:
+                                          dataAction:
+                                            {{get_booking_slots_action_name}}:
+                                              inputs:
+                                                date:
+                                                  exp: Slot.AppointmentDate
+                                              successOutputs:
+                                                time:
+                                                  var: Flow.time
+                                                start_time:
+                                                  var: Flow.start_time
+                                                end_time:
+                                                  var: Flow.end_time
+                                                time_complete:
+                                                  var: Flow.time_complete
+                                              failureOutputs:
+                                                errorCode:
+                                                  noValue: true
+                                                status:
+                                                  noValue: true
+                                                correlationId:
+                                                  noValue: true
+                                                entityId:
+                                                  noValue: true
+                                                entityName:
+                                                  noValue: true
+                                                userMessage:
+                                                  noValue: true
+                                                userParamsMessage:
+                                                  noValue: true
+                                                userParams.key:
+                                                  noValue: true
+                                                userParams.value:
+                                                  noValue: true
+                                                details.errorCode:
+                                                  noValue: true
+                                                details.fieldName:
+                                                  noValue: true
+                                                details.entityId:
+                                                  noValue: true
+                                                details.entityName:
+                                                  noValue: true
+                                      outputs:
+                                        success:
+                                          actions:
+                                            - switch:
+                                                name: Switch
+                                                evaluate:
+                                                  firstTrue:
+                                                    default:
+                                                      actions:
+                                                        - communicate:
+                                                            name: Communicate
+                                                            communication:
+                                                              exp: "MakeCommunication(\n  \"It seems that there are no available appointments on your given date. Please choose another date.\")"
+                                                        - clearSlot:
+                                                            name: Clear Slot
+                                                            slots:
+                                                              - slot:
+                                                                  name: AppointmentDate
+                                                              - slot:
+                                                                  name: AppointmentTime
+                                                        - loopNext:
+                                                            name: Next Loop
+                                                    cases:
+                                                      - case:
+                                                          value:
+                                                            exp: "(Count(Flow.time) != 0) and (FindFirst(Flow.time_complete, ToString(Slot.AppointmentTime)) != -1)"
+                                                          actions:
+                                                            - updateData:
+                                                                name: Update Data
+                                                                statements:
+                                                                  - integer:
+                                                                      variable: Flow.slot_index
+                                                                      value:
+                                                                        exp: FindFirst(Flow.time_complete, ToString(Slot.AppointmentTime))
+                                                            - askForBoolean:
+                                                                name: Ask for Yes / No
+                                                                question:
+                                                                  exp: "MakeCommunication(\n  \"Your preferred time for your appointment is available. Confirming your booking on \", \n  ToCommunication(ResolveSlot(Slot.AppointmentDate), Format.Date.shortYear), \n  \". \", \n  ToCommunication(ResolveSlot(Slot.AppointmentTime)), \n  \". Do you want to book this appointment?\")"
+                                                                noInput:
+                                                                  exp: "MakeCommunication(\n  \"Say \\\"yes\\\" if you want to proceed or \\\"no\\\" if you don't.\")"
+                                                                noMatch:
+                                                                  exp: "MakeCommunication(\n  \"Please say \\\"yes\\\" or \\\"no\\\".  Do you want to proceed?\")"
+                                                                voiceEndOfInputTimeout:
+                                                                  noValue: true
+                                                                outputs:
+                                                                  "yes":
+                                                                    actions:
+                                                                      - callData:
+                                                                          name: Call Data Action
+                                                                          timeout:
+                                                                            lit:
+                                                                              minutes: 1
+                                                                          category:
+                                                                            {{lambda_integration_name}}:
+                                                                              dataAction:
+                                                                                {{create_booking_action_name}}:
+                                                                                  inputs:
+                                                                                    start_time:
+                                                                                      exp: GetAt(Flow.start_time, Flow.slot_index)
+                                                                                    end_time:
+                                                                                      exp: GetAt(Flow.end_time, Flow.slot_index)
+                                                                                  successOutputs:
+                                                                                    id:
+                                                                                      var: Flow.booking_id
+                                                                                  failureOutputs:
+                                                                                    errorCode:
+                                                                                      noValue: true
+                                                                                    status:
+                                                                                      noValue: true
+                                                                                    correlationId:
+                                                                                      noValue: true
+                                                                                    entityId:
+                                                                                      noValue: true
+                                                                                    entityName:
+                                                                                      noValue: true
+                                                                                    userMessage:
+                                                                                      noValue: true
+                                                                                    userParamsMessage:
+                                                                                      noValue: true
+                                                                                    userParams.key:
+                                                                                      noValue: true
+                                                                                    userParams.value:
+                                                                                      noValue: true
+                                                                                    details.errorCode:
+                                                                                      noValue: true
+                                                                                    details.fieldName:
+                                                                                      noValue: true
+                                                                                    details.entityId:
+                                                                                      noValue: true
+                                                                                    details.entityName:
+                                                                                      noValue: true
+                                                                          outputs:
+                                                                            failure:
+                                                                              actions:
+                                                                                - communicate:
+                                                                                    name: Communicate
+                                                                                    communication:
+                                                                                      exp: "MakeCommunication(\n  \"There is an error processing your request. Please try again later.\")"
+                                                                                - clearSlot:
+                                                                                    name: Clear Slot
+                                                                                    slots:
+                                                                                      - slot:
+                                                                                          name: AppointmentDate
+                                                                                      - slot:
+                                                                                          name: AppointmentTime
+                                                                                - loopNext:
+                                                                                    name: Next Loop
+                                                                            timeout:
+                                                                              actions:
+                                                                                - communicate:
+                                                                                    name: Communicate
+                                                                                    communication:
+                                                                                      exp: "MakeCommunication(\n  \"There is an error processing your request. Please try again later.\")"
+                                                                                - clearSlot:
+                                                                                    name: Clear Slot
+                                                                                    slots:
+                                                                                      - slot:
+                                                                                          name: AppointmentDate
+                                                                                      - slot:
+                                                                                          name: AppointmentTime
+                                                                                - loopNext:
+                                                                                    name: Next Loop
+                                                                      - communicate:
+                                                                          name: Communicate
+                                                                          communication:
+                                                                            exp: "MakeCommunication(\n  \"Success! We have successfully booked your appointment! Thank you! \", \n  \"Booking ID: \", \n  ToCommunication(Flow.booking_id, Format.String.playChars))"
+                                                                      - loopExit:
+                                                                          name: Exit Loop
+                                                                  "no":
+                                                                    actions:
+                                                                      - communicate:
+                                                                          name: Communicate
+                                                                          communication:
+                                                                            exp: "MakeCommunication(\n  \"Ok. Going back to selecting date...\")"
+                                                                      - clearSlot:
+                                                                          name: Clear Slot
+                                                                          slots:
+                                                                            - slot:
+                                                                                name: AppointmentDate
+                                                                            - slot:
+                                                                                name: AppointmentTime
+                                                                      - loopNext:
+                                                                          name: Next Loop
+                                                                  maxNoInputs:
+                                                                    enabled: false
+                                                                  maxNoMatches:
+                                                                    enabled: false
+                                                      - case:
+                                                          value:
+                                                            exp: "(Count(Flow.time) != 0) and (FindFirst(Flow.time_complete, ToString(Slot.AppointmentTime)) == -1)"
+                                                          actions:
+                                                            - decision:
+                                                                name: Decision
+                                                                condition:
+                                                                  exp: isNotSetOrEmpty(Slot.AppointmentTime)
+                                                                outputs:
+                                                                  "yes":
+                                                                    actions:
+                                                                      - communicate:
+                                                                          name: Communicate
+                                                                          communication:
+                                                                            exp: "MakeCommunication(\n  \"Here are the available time slots on \", \n  ToCommunication(ResolveSlot(Slot.AppointmentDate), Format.Date.shortYear), \n  \": \", \n  ToCommunication(ToDisplayString(Flow.time)))"
+                                                                  "no":
+                                                                    actions:
+                                                                      - communicate:
+                                                                          name: Communicate
+                                                                          communication:
+                                                                            exp: "MakeCommunication(\n  \"The time you want to book is unavailable. Here are the available time slots on \", \n  ToCommunication(ResolveSlot(Slot.AppointmentDate), Format.Date.shortYear), \n  \": \", \n  ToCommunication(ToDisplayString(Flow.time)))"
+                                                            - askForBoolean:
+                                                                name: Ask for Yes / No
+                                                                question:
+                                                                  exp: "MakeCommunication(\n  \"Do want to book a specific time on this date? Enter \\\"No\\\" if you want to check another date.\")"
+                                                                noInput:
+                                                                  exp: "MakeCommunication(\n  \"Say \\\"yes\\\" if you want to proceed or \\\"no\\\" if you don't.\")"
+                                                                noMatch:
+                                                                  exp: "MakeCommunication(\n  \"Please say \\\"yes\\\" or \\\"no\\\".  Do you want to proceed?\")"
+                                                                voiceEndOfInputTimeout:
+                                                                  noValue: true
+                                                                outputs:
+                                                                  "yes":
+                                                                    actions:
+                                                                      - loop:
+                                                                          name: Time Slot Loop
+                                                                          currentIndex:
+                                                                            var: Flow.TimeSlotLoop
+                                                                          loopCount:
+                                                                            lit: 99
+                                                                          outputs:
+                                                                            loop:
+                                                                              actions:
+                                                                                - askForSlot:
+                                                                                    name: Ask for Slot
+                                                                                    slot:
+                                                                                      name: AppointmentTime
+                                                                                    question:
+                                                                                      exp: "MakeCommunication(\n  \"Please enter your preferred time slot.\")"
+                                                                                    customValidation:
+                                                                                      noValue: true
+                                                                                    confirmationMode:
+                                                                                      lit: never
+                                                                                    noInput:
+                                                                                      exp: "MakeCommunication(\n  \"Please enter your preferred time slot.\")"
+                                                                                    noMatch:
+                                                                                      exp: "MakeCommunication(\n  \"I'm sorry I didn't catch that. Please enter your preferred time slot.\")"
+                                                                                    voiceEndOfInputTimeout:
+                                                                                      noValue: true
+                                                                                    outputs:
+                                                                                      maxNoInputs:
+                                                                                        enabled: false
+                                                                                      maxNoMatches:
+                                                                                        enabled: false
+                                                                                - updateData:
+                                                                                    name: Update Data
+                                                                                    statements:
+                                                                                      - integer:
+                                                                                          variable: Flow.slot_index
+                                                                                          value:
+                                                                                            exp: FindFirst(Flow.time_complete, ToString(Slot.AppointmentTime))
+                                                                                - decision:
+                                                                                    name: Check if chosen time in list
+                                                                                    condition:
+                                                                                      exp: Flow.slot_index != -1
+                                                                                    outputs:
+                                                                                      "yes":
+                                                                                        actions:
+                                                                                          - loopExit:
+                                                                                              name: Exit Loop
+                                                                                      "no":
+                                                                                        actions:
+                                                                                          - communicate:
+                                                                                              name: Communicate
+                                                                                              communication:
+                                                                                                exp: "MakeCommunication(\n  \"The time slot you've chosen is not in one of the choices. Please choose again. \")"
+                                                                                          - clearSlot:
+                                                                                              name: Clear Slot
+                                                                                              slots:
+                                                                                                - slot:
+                                                                                                    name: AppointmentTime
+                                                                                          - loopNext:
+                                                                                              name: Next Loop
+                                                                      - askForBoolean:
+                                                                          name: Ask for Yes / No
+                                                                          question:
+                                                                            exp: "MakeCommunication(\n  \"Confirming your booking on \", \n  ToCommunication(ResolveSlot(Slot.AppointmentDate), Format.Date.shortYear), \n  \". \", \n  ToCommunication(ResolveSlot(Slot.AppointmentTime)), \n  \". Do you want to book this appointment?\")"
+                                                                          noInput:
+                                                                            exp: "MakeCommunication(\n  \"Say \\\"yes\\\" if you want to proceed or \\\"no\\\" if you don't.\")"
+                                                                          noMatch:
+                                                                            exp: "MakeCommunication(\n  \"Please say \\\"yes\\\" or \\\"no\\\".  Do you want to proceed?\")"
+                                                                          voiceEndOfInputTimeout:
+                                                                            noValue: true
+                                                                          outputs:
+                                                                            "yes":
+                                                                              actions:
+                                                                                - callData:
+                                                                                    name: Call Data Action
+                                                                                    timeout:
+                                                                                      lit:
+                                                                                        minutes: 1
+                                                                                    category:
+                                                                                      {{lambda_integration_name}}:
+                                                                                        dataAction:
+                                                                                          {{create_booking_action_name}}:
+                                                                                            inputs:
+                                                                                              start_time:
+                                                                                                exp: GetAt(Flow.start_time, Flow.slot_index)
+                                                                                              end_time:
+                                                                                                exp: GetAt(Flow.end_time, Flow.slot_index)
+                                                                                            successOutputs:
+                                                                                              id:
+                                                                                                var: Flow.booking_id
+                                                                                            failureOutputs:
+                                                                                              errorCode:
+                                                                                                noValue: true
+                                                                                              status:
+                                                                                                noValue: true
+                                                                                              correlationId:
+                                                                                                noValue: true
+                                                                                              entityId:
+                                                                                                noValue: true
+                                                                                              entityName:
+                                                                                                noValue: true
+                                                                                              userMessage:
+                                                                                                noValue: true
+                                                                                              userParamsMessage:
+                                                                                                noValue: true
+                                                                                              userParams.key:
+                                                                                                noValue: true
+                                                                                              userParams.value:
+                                                                                                noValue: true
+                                                                                              details.errorCode:
+                                                                                                noValue: true
+                                                                                              details.fieldName:
+                                                                                                noValue: true
+                                                                                              details.entityId:
+                                                                                                noValue: true
+                                                                                              details.entityName:
+                                                                                                noValue: true
+                                                                                    outputs:
+                                                                                      failure:
+                                                                                        actions:
+                                                                                          - communicate:
+                                                                                              name: Communicate
+                                                                                              communication:
+                                                                                                exp: "MakeCommunication(\n  \"There is an error processing your request. Please try again later.\")"
+                                                                                          - clearSlot:
+                                                                                              name: Clear Slot
+                                                                                              slots:
+                                                                                                - slot:
+                                                                                                    name: AppointmentDate
+                                                                                                - slot:
+                                                                                                    name: AppointmentTime
+                                                                                          - loopNext:
+                                                                                              name: Next Loop
+                                                                                      timeout:
+                                                                                        actions:
+                                                                                          - communicate:
+                                                                                              name: Communicate
+                                                                                              communication:
+                                                                                                exp: "MakeCommunication(\n  \"There is an error processing your request. Please try again later.\")"
+                                                                                          - clearSlot:
+                                                                                              name: Clear Slot
+                                                                                              slots:
+                                                                                                - slot:
+                                                                                                    name: AppointmentDate
+                                                                                                - slot:
+                                                                                                    name: AppointmentTime
+                                                                                          - loopNext:
+                                                                                              name: Next Loop
+                                                                                - communicate:
+                                                                                    name: Communicate
+                                                                                    communication:
+                                                                                      exp: "MakeCommunication(\n  \"Success! We have successfully booked your appointment! Thank you! \", \n  \"Booking ID: \", \n  ToCommunication(Flow.booking_id, Format.String.playChars))"
+                                                                                - loopExit:
+                                                                                    name: Exit Loop
+                                                                            "no":
+                                                                              actions:
+                                                                                - communicate:
+                                                                                    name: Communicate
+                                                                                    communication:
+                                                                                      exp: "MakeCommunication(\n  \"Ok. Going back to selecting date...\")"
+                                                                                - clearSlot:
+                                                                                    name: Clear Slot
+                                                                                    slots:
+                                                                                      - slot:
+                                                                                          name: AppointmentDate
+                                                                                      - slot:
+                                                                                          name: AppointmentTime
+                                                                                - loopNext:
+                                                                                    name: Next Loop
+                                                                            maxNoInputs:
+                                                                              enabled: false
+                                                                            maxNoMatches:
+                                                                              enabled: false
+                                                                  "no":
+                                                                    actions:
+                                                                      - clearSlot:
+                                                                          name: Clear Slot
+                                                                          slots:
+                                                                            - slot:
+                                                                                name: AppointmentDate
+                                                                            - slot:
+                                                                                name: AppointmentTime
+                                                                      - loopNext:
+                                                                          name: Next Loop
+                                                                  maxNoInputs:
+                                                                    enabled: false
+                                                                  maxNoMatches:
+                                                                    enabled: false
+                                        failure:
+                                          actions:
+                                            - communicate:
+                                                name: Communicate
+                                                communication:
+                                                  exp: "MakeCommunication(\n  \"There is an error processing your request. Please try again later.\")"
+                                            - clearSlot:
+                                                name: Clear Slot
+                                                slots:
+                                                  - slot:
+                                                      name: AppointmentDate
+                                                  - slot:
+                                                      name: AppointmentTime
+                                            - loopNext:
+                                                name: Next Loop
+                                        timeout:
+                                          actions:
+                                            - communicate:
+                                                name: Communicate
+                                                communication:
+                                                  exp: "MakeCommunication(\n  \"There is an error processing your request. Please try again later.\")"
+                                            - clearSlot:
+                                                name: Clear Slot
+                                                slots:
+                                                  - slot:
+                                                      name: AppointmentDate
+                                                  - slot:
+                                                      name: AppointmentTime
+                                            - loopNext:
+                                                name: Next Loop
+                      enabled: true
+                  - intent:
+                      name: Chat with an agent
+                      actions:
+                        - transferToAcd:
+                            name: Transfer to ACD
+                            targetQueue:
+                              lit:
+                                name: {{queue_name}}
+                            preTransferCommunication:
+                              exp: "MakeCommunication(\n  \"\")"
+                            failureTransferCommunication:
+                              exp: "MakeCommunication(\n  \"\")"
+                            priority:
+                              lit: 0
+                            preferredAgents:
+                              noValue: true
+                            languageSkill:
+                              noValue: true
+                            failureOutputs:
+                              errorType:
+                                noValue: true
+                              errorMessage:
+                                noValue: true
+                            outputs:
+                              failure:
+                                actions:
+                                  - communicate:
+                                      name: Communicate
+                                      communication:
+                                        exp: "MakeCommunication(\n  \"There is an error transferring you to an agent. Please try again later.\")"
+                      enabled: true
+                noIntent:
+                  enabled: false
+                knowledge:
+                  enabled: false
+                maxNoInputs:
+                  enabled: false
+          - exitBotFlow:
+              name: Exit Bot Flow
+  settingsNaturalLanguageUnderstanding:
+    nluDomainVersion:
+      intents:
+        - utterances:
+            - segments:
+                - text: I'd like to schedule an appointment.
+              id: 093519be-4533-4ff3-a488-1397b3f3bf45
+              source: Generated
+            - segments:
+                - text: Can you help me book an appointment?
+              id: 22340f98-7022-4e0d-bab5-c5198c515421
+              source: Generated
+            - segments:
+                - text: I need to make an appointment for next week.
+              id: 754a94f3-1954-45f1-abae-9ea0d477a41f
+              source: Generated
+            - segments:
+                - text: I want to set up an appointment for dental cleaning.
+              id: f33423ef-7007-4a51-82b7-764eeed69990
+              source: Generated
+            - segments:
+                - text: I'm looking to book an appointment with the doctor.
+              id: e1311497-4c62-41d0-8e4e-dfbf408d635e
+              source: Generated
+            - segments:
+                - text: I'd appreciate if you could schedule an appointment for me.
+              id: 7f954a33-95b1-42d5-940d-e1c88f7b34fe
+              source: Generated
+            - segments:
+                - text: I'm interested in booking an appointment for a consultation.
+              id: 678b2508-4d3b-4b11-8c70-ecba6971bb8c
+              source: Generated
+            - segments:
+                - text: I'd like to make an appointment for a checkup.
+              id: 64855f7b-7c17-4127-b1bb-c567323500cd
+              source: Generated
+            - segments:
+                - text: Could you please help me book an appointment?
+              id: 61201579-4f71-4625-8032-7e2df300035b
+              source: Generated
+            - segments:
+                - text: I need to schedule an appointment for a physical exam.
+              id: a29cd86a-fd53-486c-943d-429bf58cfc31
+              source: Generated
+            - segments:
+                - text: I want to book an appointment for a massage therapy session.
+              id: 8945cd67-40b8-4d36-99ae-7c639a3e7b6e
+              source: Generated
+            - segments:
+                - text: I'd like to set up an appointment for a haircut.
+              id: fce42447-6781-45f1-bd7f-e78f88e39340
+              source: Generated
+            - segments:
+                - text: Can you assist me in booking an appointment for a skin treatment?
+              id: 7b58191e-a14f-4dea-b8cb-014e179babe6
+              source: Generated
+            - segments:
+                - text: I'm hoping to make an appointment for a meeting with the financial advisor.
+              id: 72aa41fb-d028-468b-bac0-3b78398b7fad
+              source: Generated
+            - segments:
+                - text: I'd appreciate if you could schedule an appointment for me this Friday.
+              id: 6e2c0364-3359-4792-b615-591ddffce4e8
+              source: Generated
+            - segments:
+                - text: I need to book an appointment for a vision exam.
+              id: 56ad1e30-1a8a-409b-9ead-81be24697e35
+              source: Generated
+            - segments:
+                - text: Can you help me find an available appointment for a car service?
+              id: 28f9d268-8a9d-4975-8f01-ffdce00e65c1
+              source: Generated
+            - segments:
+                - text: I'd like to make an appointment for a career counseling session.
+              id: f06ae758-865a-4b0e-9fb5-f103ddd683f9
+              source: Generated
+            - segments:
+                - text: I want to schedule an appointment for a home inspection.
+              id: 73a5e11a-ec78-46dd-b079-cbc4afe343a7
+              source: Generated
+            - segments:
+                - text: Could you please book an appointment for me with the accountant?
+              id: 4b724d0f-0c66-4e03-a3d0-8dac5779ede1
+              source: Generated
+          entityNameReferences:
+            - AppointmentDate
+            - AppointmentTime
+          id: b2176ca1-54f1-472f-adc9-2cd86132fc60
+          name: Book an Appointment
+          description: User wants to book an appointment. User may also immediately provide the date and time they prefer.
+        - utterances:
+            - segments:
+                - text: I'd like to speak with a customer service representative.
+              id: 1ca61895-9daa-4330-9300-95297d8020ec
+              source: Generated
+            - segments:
+                - text: Can I get in touch with an agent?
+              id: 38810a2f-d523-4b58-894a-0f33c574f246
+              source: Generated
+            - segments:
+                - text: I need to talk to someone from your team.
+              id: 1f86a52a-651c-4f7d-aab1-4b714d6f04c3
+              source: Generated
+            - segments:
+                - text: I want to connect with a live agent.
+              id: 7e3a67c9-3d60-4bd0-a837-df001e8737c8
+              source: Generated
+            - segments:
+                - text: I'd appreciate if you could put me through to an agent.
+              id: fc3dda5d-71c9-41af-aa88-74951499f869
+              source: Generated
+            - segments:
+                - text: I'm looking to chat with a human agent.
+              id: bd6885a0-1656-47aa-b556-19d816c4c106
+              source: Generated
+            - segments:
+                - text: I'd like an agent to assist me with my inquiry.
+              id: b6ae32f0-59c3-4d90-b469-84ec05f3b844
+              source: Generated
+            - segments:
+                - text: Could you please connect me with an agent?
+              id: 29e45dd1-e30f-4912-93a5-40abe23ab83e
+              source: Generated
+            - segments:
+                - text: I'd be grateful if you could transfer me to an agent.
+              id: 08b214af-6e2e-4900-bffd-a8034758305a
+              source: Generated
+            - segments:
+                - text: I need to discuss an issue with one of your agents.
+              id: 787a9f2b-2c0a-4977-a968-635c8a8a86d5
+              source: Generated
+            - segments:
+                - text: I'm hoping to get in touch with a customer service agent.
+              id: 94259a3d-0b5c-44a7-8ae8-8c028824c504
+              source: Generated
+            - segments:
+                - text: I'd like to have a conversation with an agent.
+              id: 0aeb6504-e384-4cb4-b4c0-1920e69147a9
+              source: Generated
+            - segments:
+                - text: I'd appreciate the chance to speak with an agent.
+              id: 21c5a09a-0ea2-46c4-a6bc-490a66fccb44
+              source: Generated
+            - segments:
+                - text: I'm hoping an agent can help me with my request.
+              id: 61ce5dbf-1ded-4bbf-b72a-dcbb894cba12
+              source: Generated
+            - segments:
+                - text: I'd like to chat with someone from your support team.
+              id: c59908e6-393c-4410-97f8-49832629f6af
+              source: Generated
+            - segments:
+                - text: Could you please direct me to speak with an agent?
+              id: d82e8f3c-26bd-4abf-98ad-3f7bb73f2a46
+              source: Generated
+            - segments:
+                - text: I'd be grateful if you could put me in touch with an agent.
+              id: 93841c0b-1460-4c3c-8e34-cdf226e27fb1
+              source: Generated
+            - segments:
+                - text: I need to discuss something with one of your agents.
+              id: 4a69d080-106e-4e1f-9bbf-05d1e434734f
+              source: Generated
+            - segments:
+                - text: I'd like to have a conversation with a customer service agent.
+              id: ef3744c9-ee17-4102-976a-426efeba06b3
+              source: Generated
+            - segments:
+                - text: I'm looking to get in touch with a live agent for assistance.
+              id: 97e25c75-3dfe-45ad-ab7a-19c5a67b688b
+              source: Generated
+          entityNameReferences: []
+          id: 758b2a77-27d9-4471-a9f3-bef9e944ecec
+          name: Chat with an agent
+          description: User wants to chat with an agent
+      entities:
+        - name: AppointmentDate
+          type: "builtin:date"
+        - name: AppointmentTime
+          type: "builtin:time"
+      entityTypes: []
+      language: en-us
+      languageVersions: {}
+    mutedUtterances: []
